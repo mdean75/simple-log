@@ -1,8 +1,8 @@
 package main
 
 import (
+	log "github.com/mdean75/simple-log"
 	"os"
-	log "simple-log/simple-log"
 )
 
 func simpleDebugExample() {

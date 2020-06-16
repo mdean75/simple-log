@@ -1,4 +1,4 @@
-package my_logger
+package logger
 
 import (
 	"encoding/json"
