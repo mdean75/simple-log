@@ -16,31 +16,9 @@ var globalLogger logger
 
 type logging interface {
 	Debug(v ...interface{})
-	//Info(v ...interface{})
+	Info(v ...interface{})
 	//Debugf(format string, v ...interface{})
 	//Infof(format string, v ...interface{})
-}
-
-type loggerSettings struct {
-	isEnabled enabled
-	out       io.Writer
-}
-
-func NewLoggerSettings(isEnabled *enabled, out io.Writer) *loggerSettings {
-	return &loggerSettings{
-		isEnabled: *isEnabled,
-		out:       out,
-	}
-}
-
-func NewEnabledSettings(debug, err, info, shortFile, caller bool) *enabled {
-	return &enabled{
-		debugMode: debug,
-		errorMode: err,
-		infoMode:  info,
-		shortFile: shortFile,
-		setCaller: caller,
-	}
 }
 
 type logger struct {
@@ -56,18 +34,38 @@ type logger struct {
 
 type enabled struct {
 	debugMode bool
-	errorMode bool
-	infoMode  bool
 	shortFile bool
 	setCaller bool
+}
+
+type loggerSettings struct {
+	isEnabled enabled
+	out       io.Writer
+}
+
+type caller struct {
+	File string `json:"file,omitempty"`
+	Line int    `json:"line,omitempty"`
+}
+
+func NewLoggerSettings(isEnabled *enabled, out io.Writer) *loggerSettings {
+	return &loggerSettings{
+		isEnabled: *isEnabled,
+		out:       out,
+	}
+}
+
+func NewEnabledSettings(debug, shortFile bool) *enabled {
+	return &enabled{
+		debugMode: debug,
+		shortFile: shortFile,
+	}
 }
 
 func createDefaultLogger() *logger {
 	return NewLogger(&loggerSettings{
 		isEnabled: enabled{
-			debugMode: true,
-			errorMode: true,
-			infoMode:  true,
+			debugMode: false,
 			shortFile: true,
 			setCaller: true,
 		},
@@ -79,8 +77,6 @@ func CustomLogger(settings *loggerSettings) {
 	globalLogger = logger{
 		isEnabled: enabled{
 			debugMode: settings.isEnabled.debugMode,
-			errorMode: settings.isEnabled.errorMode,
-			infoMode:  settings.isEnabled.infoMode,
 			shortFile: settings.isEnabled.shortFile,
 			setCaller: settings.isEnabled.setCaller,
 		},
@@ -91,16 +87,9 @@ func CustomLogger(settings *loggerSettings) {
 func NewLogger(settings *loggerSettings) *logger {
 	return &logger{isEnabled: enabled{
 		debugMode: settings.isEnabled.debugMode,
-		errorMode: settings.isEnabled.errorMode,
-		infoMode:  settings.isEnabled.infoMode,
 		shortFile: settings.isEnabled.shortFile,
 		setCaller: settings.isEnabled.setCaller,
 	}, out: settings.out}
-}
-
-type caller struct {
-	File string `json:"file,omitempty"`
-	Line int    `json:"line,omitempty"`
 }
 
 func (lgr *logger) send() {
@@ -122,6 +111,14 @@ func (lgr *logger) Debug(v ...interface{}) {
 	lgr.send()
 }
 
+func (lgr *logger) Info(v ...interface{}) {
+
+	lgr.Time = time.Now().Format(time.RFC3339)
+	lgr.Message = fmt.Sprint(v...)
+
+	lgr.send()
+}
+
 func (lgr *logger) WithStruct(data interface{}) *logger {
 	lgr.Data = data
 	return lgr
@@ -129,6 +126,12 @@ func (lgr *logger) WithStruct(data interface{}) *logger {
 
 func (lgr *logger) WithCaller() *logger {
 	lgr.setCaller(2)
+	return lgr
+}
+
+func (lgr *logger) SetShortFile() *logger {
+	lgr.isEnabled.shortFile = true
+
 	return lgr
 }
 
@@ -153,19 +156,39 @@ func Entry() *logger {
 	if reflect.DeepEqual(globalLogger, logger{}) {
 		l = createDefaultLogger()
 	} else {
-		l = &globalLogger
+		gl := globalLogger
+		l = &gl
 	}
 
 	return l
 }
 
-func Debug(v ...interface{}) *logger {
+/*
+	Public functions to initiate the logging start here
+*/
+
+func Debug(v ...interface{}) {
 	var l *logger
 	if reflect.DeepEqual(globalLogger, logger{}) {
 		l = createDefaultLogger()
 	} else {
-		l = &globalLogger
+		gl := globalLogger
+		l = &gl
 	}
-	l.Debug(v...)
-	return l
+	if l.isEnabled.debugMode {
+		l.Debug(v...)
+	}
+
+}
+
+func Info(v ...interface{}) {
+	var l *logger
+	if reflect.DeepEqual(globalLogger, logger{}) {
+		l = createDefaultLogger()
+	} else {
+		gl := globalLogger
+		l = &gl
+	}
+	l.Info(v...)
+
 }
