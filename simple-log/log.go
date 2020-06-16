@@ -1,4 +1,4 @@
-package logger
+package simple_log
 
 import (
 	"encoding/json"
