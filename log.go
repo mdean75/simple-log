@@ -102,12 +102,12 @@ func (lgr *logger) send() {
 
 func (lgr *logger) Debug(v ...interface{}) {
 
-	if lgr.isEnabled.debugMode {
-		lgr.Time = time.Now().Format(time.RFC3339)
-
-		lgr.Message = fmt.Sprint(v...)
-
+	if !lgr.isEnabled.debugMode {
+		return
 	}
+	lgr.Time = time.Now().Format(time.RFC3339)
+
+	lgr.Message = fmt.Sprint(v...)
 	lgr.send()
 }
 
