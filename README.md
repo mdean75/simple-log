@@ -1,6 +1,6 @@
 # Simple Log
 
-Simple-log is a simple structured logger for Go, that has a minimal API to keep it ... well ... simple.  
+Simple-log is a simple structured logger for Go that has a minimal API to keep it ... well ... simple.  
 
 The inspiration for simple-log came from Dave Cheney's blog post concerning many logging packages providing too many options. 
 You can read that blog post here -> https://dave.cheney.net/2015/11/05/lets-talk-about-logging.  As per his recommendation, 
@@ -26,15 +26,11 @@ func main() {
     log.Debug("This will not display with the default logger")
     log.Info("But this will display with the default logger")
 }
-
-// output: {"message":"But this will display with the default logger","time":"2020-06-16T20:13:36-05:00"}
-
 ``` 
 
 Produces Output: 
 ```bash
 {"message":"But this will display with the default logger","time":"2020-06-16T20:13:36-05:00"}
-
 ```
 *note the debug log does not display by default
 
@@ -65,3 +61,65 @@ Produces Output:
 {"message":"And of course this will also display","time":"2020-06-16T20:13:36-05:00"}
 ```
 *note: now with the custom logger with debug mode enabled, debug level messages are logged.
+
+## Use method chaining to add additional context
+
+To add additional context to a log message, first call Entry().
+
+### Add caller information to log messages
+By default the short file name is reported but can be overridden to include the full path.
+
+```go
+package main
+
+import (
+	log "github.com/mdean75/simple-log"
+)
+
+func main() {
+    log.Entry().WithCaller().Info("Log this message with caller information")
+    log.Entry().SetLongFile().WithCaller().Info("Log this message with caller in long file format")
+    // note that SetLongFile() must be called before WithCaller() when setting the long file by method chaining
+    // this can also be set globally by creating custom logging settings with shortFile = false
+}
+```
+
+Produces Output:
+```shell script
+{"message":"Log this message with caller information","caller":{"file":"main.go","line":8},"time":"2020-06-16T22:44:19-05:00"}
+{"message":"Log this message with caller in long file format","caller":{"file":"/home/USERNAME/projects/my-logger-project/examples/test.go","line":9},"time":"2020-06-16T23:08:53-05:00"}
+```
+
+### Add a struct to the logging message
+
+```go
+package main
+
+import (
+    log "github.com/mdean75/simple-log"
+)
+
+func main() {
+    testData := struct {
+        Name string `json:"name"`
+        Age int `json:"age"`
+        Married bool `json:"married"`
+    }{Name: "Michael", Age: 47, Married: true}
+
+    log.Entry().WithStruct(testData).Info("A logging message with an included struct")
+}
+```
+
+Produces Output:
+
+```shell script
+{"message":"A logging message with an included struct","data":{"name":"Michael","age":47,"married":true},"time":"2020-06-16T23:20:30-05:00"}
+```
+*note: The message will always be listed first in the JSON output and additional calls to WithStruct() will overwrite any 
+previous calls so only the last data will be included in the log message.
+
+### Write logs to any io.Writer
+
+Because simple-log uses the io.Writer interface, logs can be written to any implementation including http.ResponseWriter.
+
+Example will be provided in the future.

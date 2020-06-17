@@ -135,6 +135,12 @@ func (lgr *logger) SetShortFile() *logger {
 	return lgr
 }
 
+func (lgr *logger) SetLongFile() *logger {
+	lgr.isEnabled.shortFile = false
+
+	return lgr
+}
+
 func (lgr *logger) setCaller(n int) {
 	_, file, line, _ := runtime.Caller(n)
 
