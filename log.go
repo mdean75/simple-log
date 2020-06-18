@@ -141,6 +141,13 @@ func (lgr *logger) SetLongFile() *logger {
 	return lgr
 }
 
+// TODO: ensure out is a valid type or is this even needed
+func (lgr *logger) SetOutStream(out io.Writer) *logger {
+	lgr.out = out
+
+	return lgr
+}
+
 func (lgr *logger) setCaller(n int) {
 	_, file, line, _ := runtime.Caller(n)
 
