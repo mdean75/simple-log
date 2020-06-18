@@ -15,7 +15,7 @@ Debug logging is off by default, however a custom global logger can be specified
 
 ### Default logger
 
-```go
+```
 package main
 
 import (
@@ -36,7 +36,7 @@ Produces Output:
 
 ### Custom logger with debug mode turned on
 
-```go
+```
 package main
 
 import (
@@ -69,7 +69,7 @@ To add additional context to a log message, first call Entry().
 ### Add caller information to log messages
 By default the short file name is reported but can be overridden to include the full path.
 
-```go
+```
 package main
 
 import (
@@ -92,7 +92,7 @@ Produces Output:
 
 ### Add a struct to the logging message
 
-```go
+```
 package main
 
 import (
@@ -120,6 +120,31 @@ previous calls so only the last data will be included in the log message.
 
 ### Write logs to any io.Writer
 
-Because simple-log uses the io.Writer interface, logs can be written to any implementation including http.ResponseWriter.
+Because simple-log uses the io.Writer interface, logs can be written to any implementation such as http.ResponseWriter.
 
-Example will be provided in the future.
+```
+func health() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusAccepted)
+        
+        log.Entry().SetOutStream(w).WithCaller().Info("Using simple-log, we can write to any io.Writer including http.ResponseWriter")
+    }
+}
+```
+
+## Entry Methods
+
+The below list contains all the methods that can be called on a logger
+
+* Overriding methods alter the default or global logger for this instance only
+  * Entry()         *note: must be the first method called when using any other modifier method
+  * SetShortFile()  *note: must be called before WithCaller()
+  * SetLongFile()   *note: must be called before WithCaller()
+  * WithCaller()
+  * WithStruct()
+  * SetOutStream()
+
+* Logging methods, send the log message at the corresponding level. In a chained method call this must be the last method called.
+  * Debug()
+  * Info()
