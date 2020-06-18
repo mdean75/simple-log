@@ -44,8 +44,9 @@ type loggerSettings struct {
 }
 
 type caller struct {
-	File string `json:"file,omitempty"`
-	Line int    `json:"line,omitempty"`
+	File     string `json:"file,omitempty"`
+	Function string `json:"function,omitempty"`
+	Line     int    `json:"line,omitempty"`
 }
 
 func NewLoggerSettings(isEnabled *enabled, out io.Writer) *loggerSettings {
@@ -149,7 +150,8 @@ func (lgr *logger) SetOutStream(out io.Writer) *logger {
 }
 
 func (lgr *logger) setCaller(n int) {
-	_, file, line, _ := runtime.Caller(n)
+	pc, file, line, _ := runtime.Caller(n)
+	fn := runtime.FuncForPC(pc)
 
 	var caller caller
 	if lgr.isEnabled.shortFile {
@@ -157,6 +159,12 @@ func (lgr *logger) setCaller(n int) {
 	} else {
 		caller.File = file
 	}
+
+	if fn != nil {
+		caller.Function = fn.Name()
+
+	}
+
 	caller.Line = line
 
 	lgr.Caller = &caller
