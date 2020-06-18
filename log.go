@@ -25,11 +25,21 @@ type logger struct {
 	isEnabled enabled // not data to be displayed
 	out       io.Writer
 
-	Message string        `json:"message"`
-	Data    interface{}   `json:"data,omitempty"`
-	Fields  []interface{} `json:"fields,omitempty"`
-	Caller  *caller       `json:"caller,omitempty"`
-	Time    string        `json:"time,omitempty"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Caller  *caller     `json:"caller,omitempty"`
+	Time    string      `json:"time,omitempty"`
+
+	entry entry
+}
+
+type entry struct {
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Caller  *caller     `json:"caller,omitempty"`
+	Time    string      `json:"time,omitempty"`
+
+	logger *logger // ensure this is not serialized
 }
 
 type enabled struct {
@@ -190,26 +200,33 @@ func Entry() *logger {
 
 func Debug(v ...interface{}) {
 	var l *logger
+
+	// check if the globalLogger is a zero value logger and create a new default logger if needed
 	if reflect.DeepEqual(globalLogger, logger{}) {
-		l = createDefaultLogger()
+		globalLogger = *createDefaultLogger()
+		l = &globalLogger
 	} else {
 		gl := globalLogger
 		l = &gl
 	}
+
+	// only process the logging message if debug mode is enabled
 	if l.isEnabled.debugMode {
 		l.Debug(v...)
 	}
-
 }
 
 func Info(v ...interface{}) {
 	var l *logger
+
+	// check if the globalLogger is a zero value logger and create a new default logger if needed
 	if reflect.DeepEqual(globalLogger, logger{}) {
-		l = createDefaultLogger()
+		globalLogger = *createDefaultLogger()
+		l = &globalLogger
 	} else {
 		gl := globalLogger
 		l = &gl
 	}
+	// TODO: see about moving logging functions to methods of entry instead of lagger and create new entry with the logger in the struct
 	l.Info(v...)
-
 }
