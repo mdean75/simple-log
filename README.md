@@ -7,7 +7,7 @@ You can read that blog post here -> https://dave.cheney.net/2015/11/05/lets-talk
 simple-log provides only two levels of logging, debug and info. 
 
 Simple-log only supports logging in JSON format and has no feature to change the logging format.  The default output is 
-stdout but can be configured to use any output that implements the io.writer interface.  
+stdout but can be configured to use any output that implements the io.Writer interface.  
 
 Debug logging is off by default, however a custom global logger can be specified.
 
@@ -130,6 +130,18 @@ func health() http.HandlerFunc {
         
         log.Entry().SetOutStream(w).WithCaller().Info("Using simple-log, we can write to any io.Writer including http.ResponseWriter")
     }
+}
+```
+Responds with:
+```
+{
+  "message": "Using simple-log, we can write to any io.Writer including http.ResponseWriter",
+  "caller": {
+    "file": "main.go",
+    "function": "main.health.func1",
+    "line": 60
+  },
+  "time": "2020-06-18T07:41:28-05:00"
 }
 ```
 
