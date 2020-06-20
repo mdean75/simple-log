@@ -5,28 +5,33 @@ import (
 	"os"
 )
 
-func simpleDebugExample() {
-	log.Debug("Hello, this is a test of a debug level log message using all defaults")
-}
-
-func simpleInfoExample() {
-	log.Info("Hello, this is a test of an info level log message using all defaults")
-}
-
 func customLogger() {
-	settings := log.NewLoggerSettings(log.NewEnabledSettings(true, false), os.Stdout)
-	log.CustomLogger(settings)
+	settings := log.NewEnabled(false, true, true)
+	log.CustomLogger(*settings, os.Stderr)
 }
 func main() {
 
+	testData := struct {
+		Name    string `json:"name"`
+		Age     int    `json:"age"`
+		Married bool   `json:"married"`
+	}{Name: "Michael", Age: 47, Married: true}
+
+	log.Entry().WithStruct(testData).WithCaller().SetLongFile().Info("this should have long file format")
+	log.Info("this should be the default without caller")
+	log.Entry().WithCaller().Info("this should have caller on the default logger by calling logger")
 	customLogger()
 
-	simpleDebugExample()
-	simpleInfoExample()
-
-	log.Entry().WithCaller().Debug("this is a test debug with caller")
-	log.Entry().SetShortFile().WithCaller().Debug("this should now have the short file for the caller")
-	log.Entry().WithCaller().SetShortFile().Debug("but this will still have the long file")
-	log.Entry().Info("test")
+	log.Entry().WithStruct(testData).Debug("test with struct")
+	log.Info("test ... this should have caller info without calling withCaller")
+	//log.Info("test")
+	//log.Info("test 2")
+	//log.Entry().WithCaller().WithStruct(testData).Info("test with caller")
+	//log.Entry().SetLongFile().WithCaller().Info("long file new test")
+	//log.Entry().WithCaller().Info("test new after setting long file")
+	//log.Entry().SetShortFile().WithCaller().Info("with short file")
+	//log.Entry().SetLongFile().WithCaller().Info("test default out stream")
+	//log.Entry().SetOutStream(os.Stderr).WithCaller().Info("test out stream stderr")
+	//log.Info("back to testing default")
 
 }
