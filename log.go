@@ -21,10 +21,6 @@ type logging interface {
 	//Infof(format string, v ...interface{})
 }
 
-type tempEntry interface {
-	Info(v ...interface{})
-}
-
 // a logger specifies configuration for the logger
 type logger struct {
 	isEnabled enabled // not data to be displayed
@@ -34,18 +30,6 @@ type logger struct {
 	Data    interface{} `json:"data,omitempty"`
 	Caller  *caller     `json:"caller,omitempty"`
 	Time    string      `json:"time,omitempty"`
-
-	entry entry
-}
-
-// an entry contains the details of the logging message
-type entry struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Caller  *caller     `json:"caller,omitempty"`
-	Time    string      `json:"time,omitempty"`
-
-	logger *logger // ensure this is not serialized
 }
 
 type enabled struct {
@@ -117,14 +101,6 @@ func (lgr *logger) send() {
 	lgr.out.Write(b)
 }
 
-func (entry *entry) sendEntry() {
-
-	b, _ := json.Marshal(entry)
-	b = append(b, 10)
-
-	entry.logger.out.Write(b)
-}
-
 func (lgr *logger) Debug(v ...interface{}) {
 
 	if !lgr.isEnabled.debugMode {
@@ -136,30 +112,26 @@ func (lgr *logger) Debug(v ...interface{}) {
 	lgr.send()
 }
 
-func (entry *entry) Info(v ...interface{}) {
-
-	entry.Time = time.Now().Format(time.RFC3339)
-	entry.Message = fmt.Sprint(v...)
-
-	entry.sendEntry()
-}
-
+// deprecated
 func (lgr *logger) WithStruct(data interface{}) *logger {
 	lgr.Data = data
 	return lgr
 }
 
+// deprecated
 func (lgr *logger) WithCaller() *logger {
 	lgr.setCaller(2)
 	return lgr
 }
 
+// deprecated
 func (lgr *logger) SetShortFile() *logger {
 	lgr.isEnabled.shortFile = true
 
 	return lgr
 }
 
+// deprecated
 func (lgr *logger) SetLongFile() *logger {
 	lgr.isEnabled.shortFile = false
 
@@ -173,6 +145,7 @@ func (lgr *logger) SetOutStream(out io.Writer) *logger {
 	return lgr
 }
 
+// deprecated
 func (lgr *logger) setCaller(n int) {
 	pc, file, line, _ := runtime.Caller(n)
 	fn := runtime.FuncForPC(pc)
@@ -195,6 +168,8 @@ func (lgr *logger) setCaller(n int) {
 
 }
 
+// deprecated
+// Entry must be called first in order to override logger settings for a specific log message.
 func Entry() *logger {
 	var l *logger
 
@@ -228,10 +203,6 @@ func Debug(v ...interface{}) {
 	if l.isEnabled.debugMode {
 		l.Debug(v...)
 	}
-}
-
-func newEntry() *entry {
-	return &entry{}
 }
 
 func Info(v ...interface{}) {
