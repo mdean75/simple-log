@@ -16,11 +16,16 @@ var globalLogger logger
 
 type logging interface {
 	Debug(v ...interface{})
-	Info(v ...interface{})
+	//Info(v ...interface{})
 	//Debugf(format string, v ...interface{})
 	//Infof(format string, v ...interface{})
 }
 
+type tempEntry interface {
+	Info(v ...interface{})
+}
+
+// a logger specifies configuration for the logger
 type logger struct {
 	isEnabled enabled // not data to be displayed
 	out       io.Writer
@@ -33,6 +38,7 @@ type logger struct {
 	entry entry
 }
 
+// an entry contains the details of the logging message
 type entry struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
@@ -111,6 +117,14 @@ func (lgr *logger) send() {
 	lgr.out.Write(b)
 }
 
+func (entry *entry) sendEntry() {
+
+	b, _ := json.Marshal(entry)
+	b = append(b, 10)
+
+	entry.logger.out.Write(b)
+}
+
 func (lgr *logger) Debug(v ...interface{}) {
 
 	if !lgr.isEnabled.debugMode {
@@ -122,12 +136,12 @@ func (lgr *logger) Debug(v ...interface{}) {
 	lgr.send()
 }
 
-func (lgr *logger) Info(v ...interface{}) {
+func (entry *entry) Info(v ...interface{}) {
 
-	lgr.Time = time.Now().Format(time.RFC3339)
-	lgr.Message = fmt.Sprint(v...)
+	entry.Time = time.Now().Format(time.RFC3339)
+	entry.Message = fmt.Sprint(v...)
 
-	lgr.send()
+	entry.sendEntry()
 }
 
 func (lgr *logger) WithStruct(data interface{}) *logger {
@@ -216,17 +230,23 @@ func Debug(v ...interface{}) {
 	}
 }
 
+func newEntry() *entry {
+	return &entry{}
+}
+
 func Info(v ...interface{}) {
-	var l *logger
+	var e *entry
+	e = newEntry()
 
 	// check if the globalLogger is a zero value logger and create a new default logger if needed
 	if reflect.DeepEqual(globalLogger, logger{}) {
 		globalLogger = *createDefaultLogger()
-		l = &globalLogger
+		e.logger = &globalLogger
 	} else {
 		gl := globalLogger
-		l = &gl
+		e.logger = &gl
 	}
-	// TODO: see about moving logging functions to methods of entry instead of lagger and create new entry with the logger in the struct
-	l.Info(v...)
+
+	// TODO: see about moving logging functions to methods of entry instead of logger and create new entry with the logger in the struct
+	e.Info(v...)
 }
