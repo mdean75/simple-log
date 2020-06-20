@@ -52,7 +52,7 @@ func createDefaultLogger() *logger {
 	return newLogger(&Enabled{
 		debugMode: false,
 		shortFile: true,
-		setCaller: true,
+		setCaller: false,
 	}, os.Stdout)
 
 }

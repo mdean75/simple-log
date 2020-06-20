@@ -21,7 +21,8 @@ type entry struct {
 	Caller  *caller     `json:"caller,omitempty"`
 	Time    string      `json:"time,omitempty"`
 
-	logger *logger // ensure this is not serialized
+	callerSkip int
+	logger     *logger // ensure this is not serialized
 }
 
 // TODO: SEE IF I CAN ALLOW CALLING METHODS IN ANY ORDER IE. SETSHORTCALLER AFTER WITH CALLER
@@ -60,6 +61,14 @@ func (entry *entry) Debug(v ...interface{}) {
 
 func (entry *entry) Info(v ...interface{}) {
 
+	if entry.logger.isEnabled.setCaller {
+		if entry.callerSkip == 0 {
+			entry.setCaller(3)
+		} else {
+			entry.setCaller(2)
+		}
+
+	}
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
 
@@ -79,8 +88,11 @@ func (entry *entry) SetShortFile() *entry {
 }
 
 func (entry *entry) WithCaller() *entry {
-	entry.setCaller(2)
+	//entry.setCaller(2)
+	entry.logger.isEnabled.setCaller = true
+	entry.callerSkip = 2
 	return entry
+
 }
 
 func (entry *entry) WithStruct(data interface{}) *entry {
