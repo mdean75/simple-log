@@ -29,14 +29,13 @@ func newEntry() *entry {
 	return &entry{}
 }
 
-func EntryNew() *entry {
+func Entry() *entry {
 	var e *entry
 	e = newEntry()
 
 	var l *logger
 
 	if reflect.DeepEqual(globalLogger, logger{}) {
-		//globalLogger = *createDefaultLogger()
 		l = createDefaultLogger()
 
 	} else {
@@ -56,7 +55,7 @@ func (entry *entry) Debug(v ...interface{}) {
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
 
-	entry.sendEntry()
+	entry.send()
 }
 
 func (entry *entry) Info(v ...interface{}) {
@@ -64,32 +63,32 @@ func (entry *entry) Info(v ...interface{}) {
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
 
-	entry.sendEntry()
+	entry.send()
 }
 
-func (entry *entry) SetLongFileNew() *entry {
+func (entry *entry) SetLongFile() *entry {
 	entry.logger.isEnabled.shortFile = false
 
 	return entry
 }
 
-func (entry *entry) SetShortFileNew() *entry {
+func (entry *entry) SetShortFile() *entry {
 	entry.logger.isEnabled.shortFile = true
 
 	return entry
 }
 
-func (entry *entry) WithCallerNew() *entry {
-	entry.setCallerNew(2)
+func (entry *entry) WithCaller() *entry {
+	entry.setCaller(2)
 	return entry
 }
 
-func (entry *entry) WithStructNew(data interface{}) *entry {
+func (entry *entry) WithStruct(data interface{}) *entry {
 	entry.Data = data
 	return entry
 }
 
-func (entry *entry) sendEntry() {
+func (entry *entry) send() {
 
 	b, _ := json.Marshal(entry)
 	b = append(b, 10)
@@ -97,7 +96,7 @@ func (entry *entry) sendEntry() {
 	entry.logger.out.Write(b)
 }
 
-func (entry *entry) setCallerNew(n int) {
+func (entry *entry) setCaller(n int) {
 	pc, file, line, _ := runtime.Caller(n)
 	fn := runtime.FuncForPC(pc)
 
@@ -121,7 +120,7 @@ func (entry *entry) setCallerNew(n int) {
 
 // SetOutStream will set the output stream for a specific instance of a logger
 func (entry *entry) SetOutStream(out io.Writer) *entry {
-	entry.logger.SetOutStream(out)
+	entry.logger.setOutStream(out)
 
 	return entry
 }

@@ -15,7 +15,7 @@ func Debug(v ...interface{}) {
 		e.logger = &gl
 	}
 
-	// only process the logging message if debug mode is enabled
+	// only process the logging message if debug mode is Enabled
 	if e.logger.isEnabled.debugMode {
 		e.Debug(v...)
 	}
