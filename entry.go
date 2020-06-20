@@ -3,6 +3,7 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -21,6 +22,49 @@ type entry struct {
 	Time    string      `json:"time,omitempty"`
 
 	logger *logger // ensure this is not serialized
+}
+
+// TODO: SEE IF I CAN ALLOW CALLING METHODS IN ANY ORDER IE. SETSHORTCALLER AFTER WITH CALLER
+func newEntry() *entry {
+	return &entry{}
+}
+
+func EntryNew() *entry {
+	var e *entry
+	e = newEntry()
+
+	var l *logger
+
+	if reflect.DeepEqual(globalLogger, logger{}) {
+		//globalLogger = *createDefaultLogger()
+		l = createDefaultLogger()
+
+	} else {
+		gl := globalLogger
+		l = &gl
+	}
+
+	e.logger = l
+	return e
+}
+
+func (entry *entry) Debug(v ...interface{}) {
+
+	if !entry.logger.isEnabled.debugMode {
+		return
+	}
+	entry.Time = time.Now().Format(time.RFC3339)
+	entry.Message = fmt.Sprint(v...)
+
+	entry.sendEntry()
+}
+
+func (entry *entry) Info(v ...interface{}) {
+
+	entry.Time = time.Now().Format(time.RFC3339)
+	entry.Message = fmt.Sprint(v...)
+
+	entry.sendEntry()
 }
 
 func (entry *entry) SetLongFileNew() *entry {
@@ -43,14 +87,6 @@ func (entry *entry) WithCallerNew() *entry {
 func (entry *entry) WithStructNew(data interface{}) *entry {
 	entry.Data = data
 	return entry
-}
-
-func (entry *entry) Info(v ...interface{}) {
-
-	entry.Time = time.Now().Format(time.RFC3339)
-	entry.Message = fmt.Sprint(v...)
-
-	entry.sendEntry()
 }
 
 func (entry *entry) sendEntry() {
@@ -83,25 +119,9 @@ func (entry *entry) setCallerNew(n int) {
 	entry.Caller = &caller
 }
 
-func EntryNew() *entry {
-	var e *entry
-	e = newEntry()
+// SetOutStream will set the output stream for a specific instance of a logger
+func (entry *entry) SetOutStream(out io.Writer) *entry {
+	entry.logger.SetOutStream(out)
 
-	var l *logger
-
-	if reflect.DeepEqual(globalLogger, logger{}) {
-		//globalLogger = *createDefaultLogger()
-		l = createDefaultLogger()
-
-	} else {
-		gl := globalLogger
-		l = &gl
-	}
-
-	e.logger = l
-	return e
-}
-
-func newEntry() *entry {
-	return &entry{}
+	return entry
 }
