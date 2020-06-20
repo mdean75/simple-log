@@ -21,11 +21,10 @@ type entry struct {
 	Caller  *caller     `json:"caller,omitempty"`
 	Time    string      `json:"time,omitempty"`
 
-	callerSkip int
+	callerSkip int     // needed to get correct caller data
 	logger     *logger // ensure this is not serialized
 }
 
-// TODO: SEE IF I CAN ALLOW CALLING METHODS IN ANY ORDER IE. SETSHORTCALLER AFTER WITH CALLER
 func newEntry() *entry {
 	return &entry{}
 }
@@ -53,6 +52,18 @@ func (entry *entry) Debug(v ...interface{}) {
 	if !entry.logger.isEnabled.debugMode {
 		return
 	}
+
+	if entry.logger.isEnabled.setCaller {
+		// call to runtime to get caller information must be 2 when calling debug or info directly, otherwise we need
+		//to add 1 to account for an additional function call
+		if entry.callerSkip == 0 {
+			entry.setCaller(3)
+		} else {
+			entry.setCaller(2)
+		}
+
+	}
+
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
 
@@ -62,6 +73,8 @@ func (entry *entry) Debug(v ...interface{}) {
 func (entry *entry) Info(v ...interface{}) {
 
 	if entry.logger.isEnabled.setCaller {
+		// call to runtime to get caller information must be 2 when calling debug or info directly, otherwise we need
+		//to add 1 to account for an additional function call
 		if entry.callerSkip == 0 {
 			entry.setCaller(3)
 		} else {
@@ -88,7 +101,6 @@ func (entry *entry) SetShortFile() *entry {
 }
 
 func (entry *entry) WithCaller() *entry {
-	//entry.setCaller(2)
 	entry.logger.isEnabled.setCaller = true
 	entry.callerSkip = 2
 	return entry
