@@ -53,37 +53,24 @@ func (entry *entry) Debug(v ...interface{}) {
 		return
 	}
 
-	if entry.logger.isEnabled.setCaller {
-		// call to runtime to get caller information must be 2 when calling debug or info directly, otherwise we need
-		//to add 1 to account for an additional function call
-		if entry.callerSkip == 0 {
-			entry.setCaller(3)
-		} else {
-			entry.setCaller(2)
-		}
-
-	}
-
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
+
+	if entry.logger.isEnabled.setCaller && entry.Caller == nil {
+		entry.WithCaller()
+	}
 
 	entry.send()
 }
 
 func (entry *entry) Info(v ...interface{}) {
 
-	if entry.logger.isEnabled.setCaller {
-		// call to runtime to get caller information must be 2 when calling debug or info directly, otherwise we need
-		//to add 1 to account for an additional function call
-		if entry.callerSkip == 0 {
-			entry.setCaller(3)
-		} else {
-			entry.setCaller(2)
-		}
-
-	}
 	entry.Time = time.Now().Format(time.RFC3339)
 	entry.Message = fmt.Sprint(v...)
+
+	if entry.logger.isEnabled.setCaller && entry.Caller == nil {
+		entry.setCaller(3)
+	}
 
 	entry.send()
 }
@@ -101,8 +88,8 @@ func (entry *entry) SetShortFile() *entry {
 }
 
 func (entry *entry) WithCaller() *entry {
-	entry.logger.isEnabled.setCaller = true
-	entry.callerSkip = 2
+	entry.setCaller(2)
+
 	return entry
 
 }
