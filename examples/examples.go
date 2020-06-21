@@ -19,16 +19,24 @@ func main() {
 		Married bool   `json:"married"`
 	}{Name: "Michael", Age: 47, Married: true}
 
-	log.Entry().SetLongFile().WithCaller().WithStruct(testData).Info(" chained calls")
+	log.WithCaller().WithStruct(testData).Info("test with caller directly")
+	log.WithStruct(testData).WithCaller().Info("test with struct directly the with caller")
+	log.SetLongFile().WithCaller().Info("test setting long file then caller without entry")
+	log.WithStruct(testData).SetOutStream(os.Stderr).WithCaller().Info("line 25")
 
+	log.Entry().SetLongFile().WithCaller().WithStruct(testData).Info(" chained calls")
 	log.Entry().WithStruct(testData).SetLongFile().WithCaller().Info("this should have long file format")
 	log.Info("this should be the default without caller")
 	log.Entry().WithCaller().Info("this should have caller on the default logger by calling logger")
+	log.Entry().Info("test line 27")
 	customLogger()
+	log.Entry().Info("test line 29")
+	log.Info("test line 30")
 
 	log.Entry().WithStruct(testData).Debug("test with struct")
 	log.Info("test ... this should have caller info without calling withCaller")
-	log.Entry().SetLongFile().WithCaller().WithStruct(testData).Info("re-arranging chained calls")
+	log.Entry().SetLongFile().WithStruct(testData).WithCaller().Info("re-arranging chained calls")
+	log.Entry().SetLongFile().WithStruct(testData).SetOutStream(os.Stderr).SetShortFile().SetLongFile().WithCaller().Info("garbage ... a mess of chaining short and long format calls")
 	//log.Info("test")
 	//log.Info("test 2")
 	//log.Entry().WithCaller().WithStruct(testData).Info("test with caller")

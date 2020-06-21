@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-var std = createDefaultLogger()
 var globalLogger logger
 
 type logging interface {
@@ -17,16 +16,18 @@ type logging interface {
 
 // a logger specifies configuration for the logger
 type logger struct {
-	isEnabled Enabled // not data to be displayed
+	isEnabled Enabled
 	out       io.Writer
 }
 
+// logger settings
 type Enabled struct {
 	debugMode bool
 	shortFile bool
 	setCaller bool
 }
 
+// NewEnabled creates a new instance of the Enabled (logger settings) struct
 func NewEnabled(debug, shortFile, caller bool) *Enabled {
 	return &Enabled{
 		debugMode: debug,
@@ -57,6 +58,7 @@ func createDefaultLogger() *logger {
 
 }
 
+// CustomLogger creates a logger to override the default and sets this as the globalLogger
 func CustomLogger(settings Enabled, out io.Writer) {
 	globalLogger = logger{
 		isEnabled: Enabled{
@@ -68,7 +70,6 @@ func CustomLogger(settings Enabled, out io.Writer) {
 	}
 }
 
-// TODO: ensure out is a valid type or is this even needed
 func (lgr *logger) setOutStream(out io.Writer) *logger {
 	lgr.out = out
 
