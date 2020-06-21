@@ -19,8 +19,12 @@ func main() {
 		Married bool   `json:"married"`
 	}{Name: "Michael", Age: 47, Married: true}
 
-	log.Entry().SetLongFile().WithCaller().WithStruct(testData).Info(" chained calls")
+	log.WithCaller().WithStruct(testData).Info("test with caller directly")
+	log.WithStruct(testData).WithCaller().Info("test with struct directly the with caller")
+	log.SetLongFile().WithCaller().Info("test setting long file then caller without entry")
+	log.WithStruct(testData).SetOutStream(os.Stderr).WithCaller().Info("line 25")
 
+	log.Entry().SetLongFile().WithCaller().WithStruct(testData).Info(" chained calls")
 	log.Entry().WithStruct(testData).SetLongFile().WithCaller().Info("this should have long file format")
 	log.Info("this should be the default without caller")
 	log.Entry().WithCaller().Info("this should have caller on the default logger by calling logger")
