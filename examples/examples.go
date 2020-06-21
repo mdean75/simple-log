@@ -24,7 +24,9 @@ func main() {
 	log.Entry().WithStruct(testData).SetLongFile().WithCaller().Info("this should have long file format")
 	log.Info("this should be the default without caller")
 	log.Entry().WithCaller().Info("this should have caller on the default logger by calling logger")
+	log.Entry().Info("test line 27")
 	customLogger()
+	log.Entry().Info("test line 28")
 
 	log.Entry().WithStruct(testData).Debug("test with struct")
 	log.Info("test ... this should have caller info without calling withCaller")

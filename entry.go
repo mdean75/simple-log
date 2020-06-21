@@ -69,7 +69,7 @@ func (entry *entry) Info(v ...interface{}) {
 	entry.Message = fmt.Sprint(v...)
 
 	if entry.logger.isEnabled.setCaller && entry.Caller == nil {
-		entry.setCaller(3)
+		entry.setCaller(2)
 	}
 
 	entry.send()
