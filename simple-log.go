@@ -15,6 +15,10 @@ func Debug(v ...interface{}) {
 		e.logger = &gl
 	}
 
+	if e.logger.isEnabled.setCaller {
+		e.setCaller(2)
+	}
+
 	// only process the logging message if debug mode is Enabled
 	if e.logger.isEnabled.debugMode {
 		e.Debug(v...)
@@ -32,6 +36,10 @@ func Info(v ...interface{}) {
 	} else {
 		gl := globalLogger
 		e.logger = &gl
+	}
+
+	if e.logger.isEnabled.setCaller {
+		e.setCaller(2)
 	}
 
 	e.Info(v...)

@@ -57,7 +57,7 @@ func (entry *entry) Debug(v ...interface{}) {
 	entry.Message = fmt.Sprint(v...)
 
 	if entry.logger.isEnabled.setCaller && entry.Caller == nil {
-		entry.WithCaller()
+		entry.setCaller(2)
 	}
 
 	entry.send()
@@ -87,6 +87,8 @@ func (entry *entry) SetShortFile() *entry {
 	return entry
 }
 
+// WithCaller should only be used when overriding logger behavior, ie. it should not be called by any other method in the
+// simple-log package otherwise it will not report the correct caller function. Use setLogger(n int) within the package.
 func (entry *entry) WithCaller() *entry {
 	entry.setCaller(2)
 
