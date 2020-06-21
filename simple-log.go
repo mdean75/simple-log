@@ -34,6 +34,5 @@ func Info(v ...interface{}) {
 		e.logger = &gl
 	}
 
-	// TODO: see about moving logging functions to methods of entry instead of logger and create new entry with the logger in the struct
 	e.Info(v...)
 }
