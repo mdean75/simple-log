@@ -11,14 +11,9 @@ func Debug(v ...interface{}) {
 	var e *entry
 	e = newEntry()
 
-	// check if the globalLogger is a zero value logger and create a new default logger if needed
-	if reflect.DeepEqual(globalLogger, logger{}) {
-		globalLogger = *createDefaultLogger()
-		e.logger = &globalLogger
-	} else {
-		gl := globalLogger
-		e.logger = &gl
-	}
+	// use a copy of the globalLogger for the logging entry
+	gl := globalLogger
+	e.logger = &gl
 
 	if e.logger.isEnabled.setCaller {
 		e.setCaller(2)
@@ -36,14 +31,9 @@ func Info(v ...interface{}) {
 	var e *entry
 	e = newEntry()
 
-	// check if the globalLogger is a zero value logger and create a new default logger if needed
-	if reflect.DeepEqual(globalLogger, logger{}) {
-		globalLogger = *createDefaultLogger()
-		e.logger = &globalLogger
-	} else {
-		gl := globalLogger
-		e.logger = &gl
-	}
+	// use a copy of the globalLogger for the logging entry
+	gl := globalLogger
+	e.logger = &gl
 
 	if e.logger.isEnabled.setCaller {
 		e.setCaller(2)

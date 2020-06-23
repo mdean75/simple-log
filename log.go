@@ -3,9 +3,11 @@ package logger
 import (
 	"io"
 	"os"
+	"sync"
 )
 
-var globalLogger logger
+var globalLogger = *createDefaultLogger()
+var mu = sync.Mutex{}
 
 type logging interface {
 	Debug(v ...interface{})
@@ -18,6 +20,7 @@ type logging interface {
 type logger struct {
 	isEnabled Enabled
 	out       io.Writer
+	mu        *sync.Mutex
 }
 
 // logger settings
@@ -46,6 +49,7 @@ func newLogger(isEnabled *Enabled, out io.Writer) *logger {
 	return &logger{
 		isEnabled: *isEnabled,
 		out:       out,
+		mu:        &sync.Mutex{},
 	}
 }
 
@@ -67,6 +71,7 @@ func CustomLogger(settings Enabled, out io.Writer) {
 			setCaller: settings.shortFile,
 		},
 		out: out,
+		mu:  &sync.Mutex{},
 	}
 }
 
